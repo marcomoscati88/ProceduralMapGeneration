@@ -2,9 +2,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class NoiseGenerator {
+public class NoiseGenerator
+{
 
-	public static float[,] GenerateNoiseMap(int _mapWidth, int _mapHeight, float _noiseMagnitude) {
+	private static NoiseGenerator _instance = null;
+
+	private NoiseGenerator()
+	{
+
+	}
+
+	public static NoiseGenerator Instance 
+	{
+		get
+		{
+			if (_instance == null)
+			{
+				_instance = new NoiseGenerator();
+			}
+			return _instance;
+		}
+	}
+
+	public float[,] GenerateNoiseMap(int _mapWidth, int _mapHeight, float _noiseMagnitude)
+	{
 		float[,] _noiseMap = new float[_mapWidth, _mapHeight];
 
 		if (_noiseMagnitude <= 0)

@@ -313,6 +313,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Src\MapGenerator.cs" />
+    <Compile Include="Assets\Src\MapTexturizer.cs" />
     <Compile Include="Assets\Src\NoiseGenerator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
