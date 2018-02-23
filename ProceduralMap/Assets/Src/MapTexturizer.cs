@@ -4,17 +4,30 @@ using UnityEngine;
 
 public class MapTexturizer : MonoBehaviour
 {
+	private static MapTexturizer _instance;
+	private MapTexturizer()
+	{
 
-	[SerializeField]
+	}
+
+	public static MapTexturizer Instance
+	{
+		get
+		{
+			if (_instance == null)
+			{
+				_instance = new MapTexturizer();
+			}
+			return _instance;
+		}
+	}
+
 	private Renderer _textureRender;
 
-	public void DrawNoiseMap2D(float[,] _noiseMap)
+	public void TextureNoiseMap2D(float[,] _noiseMap, GameObject _obj)
 	{
 		int _width = _noiseMap.GetLength(0);
 		int _height = _noiseMap.GetLength(1);
-
-		_textureRender.transform.localScale = new Vector3(_width, 1, _height);
-		Texture2D _texture = new Texture2D(_width, _height);
 
 		Color[] _colorMap = new Color[_width * _height];
 		for (int y = 0; y < _height; y++)
@@ -25,8 +38,23 @@ public class MapTexturizer : MonoBehaviour
 			}
 		}
 
+		TextureColor(_colorMap, _width, _height, _obj);
+	}
+
+	public void TextureColor(Color[] _colorMap, int _width, int _height, GameObject _obj)
+	{
+		Texture2D _texture = new Texture2D(_width, _height);
+		_texture.filterMode = FilterMode.Point;
+		_texture.wrapMode = TextureWrapMode.Clamp;
 		_texture.SetPixels(_colorMap);
 		_texture.Apply();
+		DrawTexture(_texture, _obj);
+	}
+
+	public void DrawTexture(Texture2D _texture, GameObject _obj)
+	{
+		_textureRender = _obj.GetComponent<Renderer>();
 		_textureRender.sharedMaterial.mainTexture = _texture;
+		_textureRender.transform.localScale = new Vector3(_texture.width, 1, _texture.height);
 	}
 }
