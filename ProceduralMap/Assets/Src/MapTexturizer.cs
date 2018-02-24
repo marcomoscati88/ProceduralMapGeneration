@@ -41,7 +41,7 @@ public class MapTexturizer : MonoBehaviour
 		TextureColor(_colorMap, _width, _height, _obj);
 	}
 
-	public void TextureColor(Color[] _colorMap, int _width, int _height, GameObject _obj)
+	public Texture2D TextureColor(Color[] _colorMap, int _width, int _height, GameObject _obj)
 	{
 		Texture2D _texture = new Texture2D(_width, _height);
 		_texture.filterMode = FilterMode.Point;
@@ -49,6 +49,7 @@ public class MapTexturizer : MonoBehaviour
 		_texture.SetPixels(_colorMap);
 		_texture.Apply();
 		DrawTexture(_texture, _obj);
+		return _texture;
 	}
 
 	public void DrawTexture(Texture2D _texture, GameObject _obj)
@@ -56,5 +57,11 @@ public class MapTexturizer : MonoBehaviour
 		_textureRender = _obj.GetComponent<Renderer>();
 		_textureRender.sharedMaterial.mainTexture = _texture;
 		_textureRender.transform.localScale = new Vector3(_texture.width, 1, _texture.height);
+	}
+
+	public void TextureMesh(MeshData _meshData, Texture2D _texture, MeshFilter _meshFilter, MeshRenderer _meshRenderer){
+		_meshFilter.sharedMesh = _meshData.CreateMesh();
+		_meshRenderer.sharedMaterial.mainTexture = _texture;
+
 	}
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 [System.Serializable]
 public struct TerrainType {
 
-	public string _name;
-	public float _height;
-	public Color _color;
+	public string name;
+	public float height;
+	public Color color;
 }

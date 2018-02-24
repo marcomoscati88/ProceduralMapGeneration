@@ -4,5 +4,6 @@ using UnityEngine;
 
 public enum DrawMode {
 	NoiseMap,
-	ColorMap
+	ColorMap,
+	Mesh
 }
