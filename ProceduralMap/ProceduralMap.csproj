@@ -316,6 +316,8 @@
     <Compile Include="Assets\Src\MapGenerator.cs" />
     <Compile Include="Assets\Src\MapTexturizer.cs" />
     <Compile Include="Assets\Src\MeshGenerator.cs" />
+    <Compile Include="Assets\Src\Misc\EndlessTerrain.cs" />
+    <Compile Include="Assets\Src\Misc\MapChunk.cs" />
     <Compile Include="Assets\Src\Misc\MeshData.cs" />
     <Compile Include="Assets\Src\NoiseGenerator.cs" />
     <Compile Include="Assets\Src\TerrainType.cs" />

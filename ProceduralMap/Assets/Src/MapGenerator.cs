@@ -6,8 +6,8 @@ using UnityEditor;
 [RequireComponent(typeof(MapTexturizer))]
 public class MapGenerator : MonoBehaviour
 {
-	//This is the dimension of our single square of map. If you change this be aware the number you use MINUS 1 MUST be a factor of (2, 4 or 8)
-	private const int MAPCHUNKSIZE = 241;
+	//If you change this value be aware that the number you use MINUS 1 MUST be a factor of (2, 4 or 8). In this case, our mesh, will be 240x240 because we use a chunksize of 241.
+	public const int MAPCHUNKSIZE = 241;
 
 	[SerializeField]
 	private GameObject _objToMap = null;
