@@ -312,15 +312,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Src\DrawMode.cs" />
+    <Compile Include="Assets\Src\EndlessTerrain.cs" />
     <Compile Include="Assets\Src\MapGenerator.cs" />
-    <Compile Include="Assets\Src\MapTexturizer.cs" />
     <Compile Include="Assets\Src\MeshGenerator.cs" />
-    <Compile Include="Assets\Src\Misc\EndlessTerrain.cs" />
-    <Compile Include="Assets\Src\Misc\MapChunk.cs" />
+    <Compile Include="Assets\Src\Misc\DisplayMap.cs" />
+    <Compile Include="Assets\Src\Misc\DrawMode.cs" />
+    <Compile Include="Assets\Src\Misc\MapData.cs" />
+    <Compile Include="Assets\Src\Misc\MapThreadInfo.cs" />
     <Compile Include="Assets\Src\Misc\MeshData.cs" />
+    <Compile Include="Assets\Src\Misc\TerrainType.cs" />
     <Compile Include="Assets\Src\NoiseGenerator.cs" />
-    <Compile Include="Assets\Src\TerrainType.cs" />
+    <Compile Include="Assets\Src\TextureGenerator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />

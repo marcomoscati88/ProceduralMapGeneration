@@ -1,119 +1,161 @@
-﻿using System.Collections;
+﻿using System;
+using System.Threading;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-[RequireComponent(typeof(MapTexturizer))]
 public class MapGenerator : MonoBehaviour
 {
-	//If you change this value be aware that the number you use MINUS 1 MUST be a factor of (2, 4 or 8). In this case, our mesh, will be 240x240 because we use a chunksize of 241.
+	public DrawMode drawMode;
+
 	public const int MAPCHUNKSIZE = 241;
-
-	[SerializeField]
-	private GameObject _objToMap = null;
-
-	[SerializeField]
-	private MeshFilter _meshFilter;
-
-	[SerializeField]
-	private MeshRenderer _meshRenderer;
-
-	[SerializeField]
-	private DrawMode _drawMode = DrawMode.NoiseMap;
-
-	[SerializeField]
 	[Range(0, 6)]
-	private int _levelOfDetail;
+	public int meshSemplification;
+	[Range(1,100)]
+	public float noiseZoom;
+	[Range(1,5)]
+	public int layers;
+	[Range(0, 1)]
+	public float persistance;
+	[Range(1,10)]
+	public float lacunarity;
 
-	[SerializeField]
-	[Range(1, 241)]
-	private int _mapSquareSize = 1;
+	public int seed;
+	public Vector2 offset;
+	[Range(1,100)]
+	public float meshNoiseMultiplier;
+	public AnimationCurve meshNoiseCurve;
 
-	[SerializeField]
-	private float _heightMultiplier = 1.0f;
+	public bool autoUpdate;
 
-	[SerializeField]
-	private AnimationCurve _heightCurve;
+	public TerrainType[] regions;
 
-	[SerializeField]
-	private float _noiseMagnitude = 2.0f;
+	private Queue<MapThreadInfo<MapData>> _mapThreadInfoQueue = new Queue<MapThreadInfo<MapData>>();
+	private Queue<MapThreadInfo<MeshData>> _meshThreadInfoQueue = new Queue<MapThreadInfo<MeshData>>();
 
-	[SerializeField]
-	[Range(0, 100)]
-	private int _layerNumber = 2;
-
-	[SerializeField]
-	[Range(0, 100)]
-	private float _detailLevel = 0.5f;
-
-	[SerializeField]
-	[Range(1, 100)]
-	private float _lacunarity = 1.0f;
-
-	[SerializeField]
-	private bool _autoUpdate = false;
-
-	[SerializeField]
-	private int _seed;
-
-	[SerializeField]
-	private Vector2 _offset;
-
-	[SerializeField]
-	private TerrainType[] _regions;
-
-	public void GenerateMap()
+	public void DrawMapInEditor()
 	{
-		float[,] _noiseMap = NoiseGenerator.Instance.GenerateNoiseMap(_mapSquareSize, _mapSquareSize, _seed, _noiseMagnitude, _layerNumber, _detailLevel, _lacunarity, _offset);
+		MapData _mapData = GenerateMapData();
 
-		Color[] _colorMap = new Color[_mapSquareSize * _mapSquareSize];
-
-		for (int y = 0; y < _mapSquareSize; y++)
+		DisplayMap _display = FindObjectOfType<DisplayMap>();
+		if (drawMode == DrawMode.NoiseMap)
 		{
-			for (int x = 0; x < _mapSquareSize; x++)
+			_display.DrawTexture(TextureGenerator.TextureFromHeightMap(_mapData.noiseMap));
+		}
+		else if (drawMode == DrawMode.ColorMap)
+		{
+			_display.DrawTexture(TextureGenerator.TextureFromColourMap(_mapData.colorMap, MAPCHUNKSIZE, MAPCHUNKSIZE));
+		}
+		else if (drawMode == DrawMode.Mesh)
+		{
+			_display.DrawMesh(MeshGenerator.GenerateTerrainMesh(_mapData.noiseMap, meshNoiseMultiplier, meshNoiseCurve, meshSemplification), TextureGenerator.TextureFromColourMap(_mapData.colorMap, MAPCHUNKSIZE, MAPCHUNKSIZE));
+		}
+	}
+
+	public void RequestMapData(Action<MapData> _callBack)
+	{
+		ThreadStart _threadStart = delegate
+		{
+			MapDataThread(_callBack);
+		};
+
+		new Thread(_threadStart).Start();
+	}
+
+	private void MapDataThread(Action<MapData> _callBack)
+	{
+		MapData _mapData = GenerateMapData();
+		lock (_mapThreadInfoQueue)
+		{
+			_mapThreadInfoQueue.Enqueue(new MapThreadInfo<MapData>(_callBack, _mapData));
+		}
+	}
+
+	public void RequestMeshData(MapData _mapData, Action<MeshData> _callBack)
+	{
+		ThreadStart _threadStart = delegate
+		{
+			MeshDataThread(_mapData, _callBack);
+		};
+
+		new Thread(_threadStart).Start();
+	}
+
+	private void MeshDataThread(MapData _mapData, Action<MeshData> _callBack)
+	{
+		MeshData _meshData = MeshGenerator.GenerateTerrainMesh(_mapData.noiseMap, meshNoiseMultiplier, meshNoiseCurve, meshSemplification);
+		lock (_meshThreadInfoQueue)
+		{
+			_meshThreadInfoQueue.Enqueue(new MapThreadInfo<MeshData>(_callBack, _meshData));
+		}
+	}
+
+	private void Update()
+	{
+		if (_mapThreadInfoQueue.Count > 0)
+		{
+			for (int i = 0; i < _mapThreadInfoQueue.Count; i++)
 			{
-				float _currentHeight = _noiseMap[x, y];
-				for (int i = 0; i < _regions.Length; i++)
+				MapThreadInfo<MapData> _threadInfo = _mapThreadInfoQueue.Dequeue();
+				_threadInfo.callBack(_threadInfo.parameter);
+			}
+		}
+
+		if (_meshThreadInfoQueue.Count > 0)
+		{
+			for (int i = 0; i < _meshThreadInfoQueue.Count; i++)
+			{
+				MapThreadInfo<MeshData> _threadInfo = _meshThreadInfoQueue.Dequeue();
+				_threadInfo.callBack(_threadInfo.parameter);
+			}
+		}
+	}
+
+	private MapData GenerateMapData()
+	{
+		float[,] _noiseMap = NoiseGenerator.GenerateNoiseMap(MAPCHUNKSIZE, MAPCHUNKSIZE, seed, noiseZoom, layers, persistance, lacunarity, offset);
+
+		Color[] _colorMap = new Color[MAPCHUNKSIZE * MAPCHUNKSIZE];
+		for (int y = 0; y < MAPCHUNKSIZE; y++)
+		{
+			for (int x = 0; x < MAPCHUNKSIZE; x++)
+			{
+				float _currentVNoise = _noiseMap[x, y];
+				for (int i = 0; i < regions.Length; i++)
 				{
-					if (_currentHeight <= _regions[i].height)
+					if (_currentVNoise <= regions[i].height)
 					{
-						_colorMap[y * _mapSquareSize + x] = _regions[i].color;
+						_colorMap[y * MAPCHUNKSIZE + x] = regions[i].colour;
 						break;
 					}
 				}
 			}
 		}
 
-		if (_drawMode == DrawMode.NoiseMap)
-		{
-			MapTexturizer.Instance.TextureNoiseMap2D(_noiseMap, _objToMap);
-		}
-		else if (_drawMode == DrawMode.ColorMap)
-		{
-			MapTexturizer.Instance.TextureColor(_colorMap, _mapSquareSize, _mapSquareSize, _objToMap);
-		}
-		else if (_drawMode == DrawMode.Mesh)
-		{
-			MapTexturizer.Instance.TextureMesh(MeshGenerator.Instance.GenerateTerrainMap(_noiseMap, _heightMultiplier, _heightCurve, _levelOfDetail), MapTexturizer.Instance.TextureColor(_colorMap, _mapSquareSize, _mapSquareSize, _objToMap), _meshFilter, _meshRenderer);
-		}
 
+		return new MapData(_noiseMap, _colorMap);
 	}
+}
 
-	[CustomEditor(typeof(MapGenerator))]
-	public class MapGeneratorEditor : Editor
+[CustomEditor(typeof(MapGenerator))]
+public class MapGeneratorEditor : Editor
+{
+	public override void OnInspectorGUI()
 	{
-		public override void OnInspectorGUI()
-		{
-			MapGenerator _generator = (MapGenerator)target;
-			if (DrawDefaultInspector() && _generator._autoUpdate)
-			{
-				_generator.GenerateMap();
-			}
+		MapGenerator _generator = (MapGenerator)target;
 
-			if (GUILayout.Button("Generate"))
+		if (DrawDefaultInspector())
+		{
+			if (_generator.autoUpdate)
 			{
-				_generator.GenerateMap();
+				_generator.DrawMapInEditor();
 			}
+		}
+
+		if (GUILayout.Button("Generate"))
+		{
+			_generator.DrawMapInEditor();
 		}
 	}
 }
