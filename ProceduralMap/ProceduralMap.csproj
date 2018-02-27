@@ -317,6 +317,7 @@
     <Compile Include="Assets\Src\MeshGenerator.cs" />
     <Compile Include="Assets\Src\Misc\DisplayMap.cs" />
     <Compile Include="Assets\Src\Misc\DrawMode.cs" />
+    <Compile Include="Assets\Src\Misc\LODInfo.cs" />
     <Compile Include="Assets\Src\Misc\MapData.cs" />
     <Compile Include="Assets\Src\Misc\MapThreadInfo.cs" />
     <Compile Include="Assets\Src\Misc\MeshData.cs" />

@@ -12,18 +12,18 @@ public class MapGenerator : MonoBehaviour
 	public const int MAPCHUNKSIZE = 241;
 	[Range(0, 6)]
 	public int meshSemplification;
-	[Range(1,100)]
+	[Range(1, 100)]
 	public float noiseZoom;
-	[Range(1,5)]
+	[Range(1, 5)]
 	public int layers;
 	[Range(0, 1)]
 	public float persistance;
-	[Range(1,10)]
+	[Range(1, 10)]
 	public float lacunarity;
 
 	public int seed;
 	public Vector2 offset;
-	[Range(1,100)]
+	[Range(1, 100)]
 	public float meshNoiseMultiplier;
 	public AnimationCurve meshNoiseCurve;
 
@@ -36,7 +36,7 @@ public class MapGenerator : MonoBehaviour
 
 	public void DrawMapInEditor()
 	{
-		MapData _mapData = GenerateMapData();
+		MapData _mapData = GenerateMapData(Vector2.zero);
 
 		DisplayMap _display = FindObjectOfType<DisplayMap>();
 		if (drawMode == DrawMode.NoiseMap)
@@ -53,38 +53,38 @@ public class MapGenerator : MonoBehaviour
 		}
 	}
 
-	public void RequestMapData(Action<MapData> _callBack)
+	public void RequestMapData(Vector2 _center, Action<MapData> _callBack)
 	{
 		ThreadStart _threadStart = delegate
 		{
-			MapDataThread(_callBack);
+			MapDataThread(_center, _callBack);
 		};
 
 		new Thread(_threadStart).Start();
 	}
 
-	private void MapDataThread(Action<MapData> _callBack)
+	private void MapDataThread(Vector2 _center, Action<MapData> _callBack)
 	{
-		MapData _mapData = GenerateMapData();
+		MapData _mapData = GenerateMapData(_center);
 		lock (_mapThreadInfoQueue)
 		{
 			_mapThreadInfoQueue.Enqueue(new MapThreadInfo<MapData>(_callBack, _mapData));
 		}
 	}
 
-	public void RequestMeshData(MapData _mapData, Action<MeshData> _callBack)
+	public void RequestMeshData(MapData _mapData, int _leveOfDetail, Action<MeshData> _callBack)
 	{
 		ThreadStart _threadStart = delegate
 		{
-			MeshDataThread(_mapData, _callBack);
+			MeshDataThread(_mapData, _leveOfDetail, _callBack);
 		};
 
 		new Thread(_threadStart).Start();
 	}
 
-	private void MeshDataThread(MapData _mapData, Action<MeshData> _callBack)
+	private void MeshDataThread(MapData _mapData, int _levelOfDetail, Action<MeshData> _callBack)
 	{
-		MeshData _meshData = MeshGenerator.Instance.GenerateTerrainMesh(_mapData.noiseMap, meshNoiseMultiplier, meshNoiseCurve, meshSemplification);
+		MeshData _meshData = MeshGenerator.Instance.GenerateTerrainMesh(_mapData.noiseMap, meshNoiseMultiplier, meshNoiseCurve, _levelOfDetail);
 		lock (_meshThreadInfoQueue)
 		{
 			_meshThreadInfoQueue.Enqueue(new MapThreadInfo<MeshData>(_callBack, _meshData));
@@ -112,9 +112,9 @@ public class MapGenerator : MonoBehaviour
 		}
 	}
 
-	private MapData GenerateMapData()
+	private MapData GenerateMapData(Vector2 _v2)
 	{
-		float[,] _noiseMap = NoiseGenerator.Instance.GenerateNoiseMap(MAPCHUNKSIZE, MAPCHUNKSIZE, seed, noiseZoom, layers, persistance, lacunarity, offset);
+		float[,] _noiseMap = NoiseGenerator.Instance.GenerateNoiseMap(MAPCHUNKSIZE, MAPCHUNKSIZE, seed, noiseZoom, layers, persistance, lacunarity, _v2 + offset);
 
 		Color[] _colorMap = new Color[MAPCHUNKSIZE * MAPCHUNKSIZE];
 		for (int y = 0; y < MAPCHUNKSIZE; y++)
