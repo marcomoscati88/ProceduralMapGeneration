@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class EndlessTerrain : MonoBehaviour
 {
 
-	public const float maxViewDst = 400;
+	public const float MAXVIEWDISTANCE = 400;
 	public Transform viewer;
 	public Material meshMaterial;
 
@@ -21,7 +21,7 @@ public class EndlessTerrain : MonoBehaviour
 	{
 		_generator = FindObjectOfType<MapGenerator>();
 		_mapChunkSize = MapGenerator.MAPCHUNKSIZE - 1;
-		_mapChunksInViewDistance = Mathf.RoundToInt(maxViewDst / _mapChunkSize);
+		_mapChunksInViewDistance = Mathf.RoundToInt(MAXVIEWDISTANCE / _mapChunkSize);
 	}
 
 	private void Update()
@@ -107,7 +107,7 @@ public class EndlessTerrain : MonoBehaviour
 		public void UpdateTerrainChunk()
 		{
 			float _distanceFromNearEdge = Mathf.Sqrt(_bounds.SqrDistance(viewerPosition));
-			bool _isVisible = _distanceFromNearEdge <= maxViewDst;
+			bool _isVisible = _distanceFromNearEdge <= MAXVIEWDISTANCE;
 			SetVisible(_isVisible);
 		}
 
