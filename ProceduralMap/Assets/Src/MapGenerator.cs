@@ -41,15 +41,15 @@ public class MapGenerator : MonoBehaviour
 		DisplayMap _display = FindObjectOfType<DisplayMap>();
 		if (drawMode == DrawMode.NoiseMap)
 		{
-			_display.DrawTexture(TextureGenerator.TextureFromHeightMap(_mapData.noiseMap));
+			_display.DrawTexture(TextureGenerator.Instance.TextureFromHeightMap(_mapData.noiseMap));
 		}
 		else if (drawMode == DrawMode.ColorMap)
 		{
-			_display.DrawTexture(TextureGenerator.TextureFromColourMap(_mapData.colorMap, MAPCHUNKSIZE, MAPCHUNKSIZE));
+			_display.DrawTexture(TextureGenerator.Instance.TextureFromColourMap(_mapData.colorMap, MAPCHUNKSIZE, MAPCHUNKSIZE));
 		}
 		else if (drawMode == DrawMode.Mesh)
 		{
-			_display.DrawMesh(MeshGenerator.GenerateTerrainMesh(_mapData.noiseMap, meshNoiseMultiplier, meshNoiseCurve, meshSemplification), TextureGenerator.TextureFromColourMap(_mapData.colorMap, MAPCHUNKSIZE, MAPCHUNKSIZE));
+			_display.DrawMesh(MeshGenerator.Instance.GenerateTerrainMesh(_mapData.noiseMap, meshNoiseMultiplier, meshNoiseCurve, meshSemplification), TextureGenerator.Instance.TextureFromColourMap(_mapData.colorMap, MAPCHUNKSIZE, MAPCHUNKSIZE));
 		}
 	}
 
@@ -84,7 +84,7 @@ public class MapGenerator : MonoBehaviour
 
 	private void MeshDataThread(MapData _mapData, Action<MeshData> _callBack)
 	{
-		MeshData _meshData = MeshGenerator.GenerateTerrainMesh(_mapData.noiseMap, meshNoiseMultiplier, meshNoiseCurve, meshSemplification);
+		MeshData _meshData = MeshGenerator.Instance.GenerateTerrainMesh(_mapData.noiseMap, meshNoiseMultiplier, meshNoiseCurve, meshSemplification);
 		lock (_meshThreadInfoQueue)
 		{
 			_meshThreadInfoQueue.Enqueue(new MapThreadInfo<MeshData>(_callBack, _meshData));
@@ -114,7 +114,7 @@ public class MapGenerator : MonoBehaviour
 
 	private MapData GenerateMapData()
 	{
-		float[,] _noiseMap = NoiseGenerator.GenerateNoiseMap(MAPCHUNKSIZE, MAPCHUNKSIZE, seed, noiseZoom, layers, persistance, lacunarity, offset);
+		float[,] _noiseMap = NoiseGenerator.Instance.GenerateNoiseMap(MAPCHUNKSIZE, MAPCHUNKSIZE, seed, noiseZoom, layers, persistance, lacunarity, offset);
 
 		Color[] _colorMap = new Color[MAPCHUNKSIZE * MAPCHUNKSIZE];
 		for (int y = 0; y < MAPCHUNKSIZE; y++)

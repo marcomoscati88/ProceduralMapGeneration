@@ -1,10 +1,29 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public static class TextureGenerator
+public class TextureGenerator
 {
+	private static readonly TextureGenerator _instance = new TextureGenerator();
 
-	public static Texture2D TextureFromColourMap(Color[] _colorMap, int _width, int _height)
+	static TextureGenerator()
+	{
+
+	}
+
+	private TextureGenerator()
+	{
+
+	}
+
+	public static TextureGenerator Instance
+	{
+		get
+		{
+			return _instance;
+		}
+	}
+
+	public Texture2D TextureFromColourMap(Color[] _colorMap, int _width, int _height)
 	{
 		Texture2D _texture = new Texture2D(_width, _height);
 		_texture.filterMode = FilterMode.Point;
@@ -15,7 +34,7 @@ public static class TextureGenerator
 	}
 
 
-	public static Texture2D TextureFromHeightMap(float[,] _noiseMap)
+	public Texture2D TextureFromHeightMap(float[,] _noiseMap)
 	{
 		int _width = _noiseMap.GetLength(0);
 		int _height = _noiseMap.GetLength(1);

@@ -1,9 +1,29 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public static class MeshGenerator
+public class MeshGenerator
 {
-	public static MeshData GenerateTerrainMesh(float[,] _noiseMap, float _noiseMultiplier, AnimationCurve _noiseCurve, int _meshSemplification)
+	private static readonly MeshGenerator _instance = new MeshGenerator();
+
+	static MeshGenerator()
+	{
+
+	}
+
+	private MeshGenerator()
+	{
+
+	}
+
+	public static MeshGenerator Instance
+	{
+		get
+		{
+			return _instance;
+		}
+	}
+
+	public MeshData GenerateTerrainMesh(float[,] _noiseMap, float _noiseMultiplier, AnimationCurve _noiseCurve, int _meshSemplification)
 	{
 		AnimationCurve heightCurve = new AnimationCurve(_noiseCurve.keys);
 
